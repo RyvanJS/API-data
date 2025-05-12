@@ -3,7 +3,7 @@ from .views import (
     BlogPostList, BlogPostDetail,
     UserList, UserDetail, RegisterView, 
     LoginView, TokenLoginView, BlogBulkCreateView,
-    BlogListView
+    BlogListView,
 )
 
 urlpatterns = [
@@ -16,4 +16,5 @@ urlpatterns = [
     path('token-login/', TokenLoginView.as_view(), name='token-login'),
     path("Bulk-add/", BlogBulkCreateView.as_view(), name="Add-Bulk"),
     path('blogs/', BlogListView.as_view(), name='blog-list'),
+
 ]

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "api",
     "rest_framework",
     'rest_framework.authtoken',
+    'django_filters',
 ]
 
 AUTH_USER_MODEL = 'Blog.CustomUser'
@@ -147,4 +148,7 @@ REST_FRAMEWORK = {
     },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 5,  # Change to any number you want per page
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ],
 }

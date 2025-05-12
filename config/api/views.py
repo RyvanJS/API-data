@@ -11,6 +11,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
+from rest_framework.pagination import PageNumberPagination
+from Blog.fillers import BlogPostFilter
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.generics import ListAPIView
 
 # Permissions: Only authenticated users can POST
 class BlogPostList(APIView):
@@ -132,13 +136,10 @@ class BlogBulkCreateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class BlogListView(APIView):
+class BlogListView(ListAPIView):
+    queryset = BlogPost.objects.all().order_by('-id')
+    serializer_class = BlogPostSerializer
     permission_classes = [AllowAny]
-
-    def get(self, request):
-        blogs = BlogPost.objects.all().order_by('-id')
-        paginator = PageNumberPagination()
-        paginator.page_size = 5  # Optional override
-        result_page = paginator.paginate_queryset(blogs, request)
-        serializer = BlogPostSerializer(result_page, many=True)
-        return paginator.get_paginated_response(serializer.data)
+    pagination_class = PageNumberPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = BlogPostFilter
