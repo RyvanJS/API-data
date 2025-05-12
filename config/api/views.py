@@ -9,6 +9,8 @@ from django.contrib.auth.hashers import make_password
 from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import AllowAny
 
 # Permissions: Only authenticated users can POST
 class BlogPostList(APIView):
@@ -112,3 +114,31 @@ class TokenLoginView(APIView):
             token, created = Token.objects.get_or_create(user=user)
             return Response({"token": token.key})
         return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+    
+
+class BlogBulkCreateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        if isinstance(data, list):
+            serializer = BlogPostSerializer(data=data, many=True)
+        else:
+            serializer = BlogPostSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save(author=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class BlogListView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        blogs = BlogPost.objects.all().order_by('-id')
+        paginator = PageNumberPagination()
+        paginator.page_size = 5  # Optional override
+        result_page = paginator.paginate_queryset(blogs, request)
+        serializer = BlogPostSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
